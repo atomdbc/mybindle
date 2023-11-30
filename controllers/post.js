@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 
 const makePost = asyncHandler(async (req, res) => {
     const { desc, photo, location, friendTags, sharewithgroups, sharewithpages } = req.body;
-    const userId = mongoose.Types.ObjectId(req.params.user_id);
+    const userId = mongoose.Types.ObjectId(req.params.userId);
   
     // Create an object with only the fields that are present in the request body
     const postFields = {
@@ -71,7 +71,6 @@ const getPostsForUser = asyncHandler(async (req, res) => {
       res.status(204).json({ success: 'Post deleted successfully' });
     }
   });
-  
   
 
   const toggleLikeToPost = asyncHandler(async (req, res) => {

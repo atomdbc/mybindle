@@ -12,14 +12,15 @@ export const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         // required: [true, "Please provide your email"],
-        unique: [true, "Email Already Exists, Try Login"],
+        // unique: [true, "Email Already Exists, Try Login"],
         lowercase: true,
         trim: true,
         max: 50,
     },
     phoneNumber: {
         type: String,
-        unique: [true, "Phone Number Already Exists"],
+        // unique: [true, "Phone Number Already Exists"],
+        default: null
     },
     password: {
         type: String,
@@ -120,11 +121,15 @@ export const UserSchema = new mongoose.Schema({
         required: true,
         default: false,
     },
+    friends: {
+        type: Array,
+        default: [],
+    },
 
-    // verifiedWith: {
-    //     type: String,
-    //     required: [true, "Required"],
-    // },
+    verifiedWith: {
+        type: String,
+        required: [true, "Required"],
+    },
 
 }, { timestamps: true })
 

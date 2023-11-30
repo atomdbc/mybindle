@@ -59,6 +59,17 @@ export const pageSchema = new mongoose.Schema(
         default: []
     },
 
+    joining_questions: {
+      type: [
+        {
+          text: {
+            type: String,
+            required: true,
+          },
+        },
+      ],
+      default: [],
+    },
     likes: {
         type: [mongoose.Schema.Types.ObjectId], // Define as an array of ObjectId values.
         default: [], // Set a default value as an empty array.

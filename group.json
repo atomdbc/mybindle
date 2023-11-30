@@ -1,0 +1,215 @@
+{
+  "info": {
+    "_postman_id": "your-postman-collection-id",
+    "name": "Your API Collection",
+    "description": "Description of your API collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Group",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "name", "value": "", "type": "text"},
+            {"key": "slug", "value": "", "type": "text"},
+            {"key": "phone", "value": "", "type": "text"},
+            {"key": "website", "value": "", "type": "text"},
+            {"key": "purpose", "value": "", "type": "text"},
+            {"key": "visibility", "value": "", "type": "text"},
+            {"key": "description", "value": "", "type": "text"},
+            {"key": "coverPhoto", "value": "", "type": "text"},
+            {"key": "pagePhoto", "value": "", "type": "text"},
+            {"key": "anyoneCanJoin", "value": "", "type": "text"},
+            {"key": "userId", "value": "", "type": "text"}
+          ]
+        },
+        "url": {
+          "raw": "http://54.253.170.157/api/v1/groups/create",
+          "protocol": "http",
+          "host": ["http://54.253.170.157/api/v1"],
+          "path": ["groups", "create"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Group",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "groupId", "value": "", "type": "text"},
+            {"key": "userId", "value": "", "type": "text"}
+          ]
+        },
+        "url": {
+          "raw": "http://54.253.170.157/api/v1/groups/delete",
+          "protocol": "http",
+          "host": ["http://54.253.170.157/api/v1"],
+          "path": ["groups", "delete"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Group",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "groupId", "value": "", "type": "text"},
+            {"key": "updates", "value": "", "type": "text"}
+          ]
+        },
+        "url": {
+          "raw": "http://54.253.170.157/api/v1/groups/update",
+          "protocol": "http",
+          "host": ["http://54.253.170.157/api/v1"],
+          "path": ["groups", "update"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Join Group",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "groupId", "value": "", "type": "text"},
+            {"key": "userIds", "value": "", "type": "text"}
+          ]
+        },
+        "url": {
+          "raw": "http://54.253.170.157/api/v1/groups/join",
+          "protocol": "http",
+          "host": ["http://54.253.170.157/api/v1"],
+          "path": ["groups", "join"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Leave Group",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "groupId", "value": "", "type": "text"},
+            {"key": "userId", "value": "", "type": "text"}
+          ]
+        },
+        "url": {
+          "raw": "http://54.253.170.157/api/v1/groups/leave",
+          "protocol": "http",
+          "host": ["http://54.253.170.157/api/v1"],
+          "path": ["groups", "leave"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Make Group Admin",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "groupId", "value": "", "type": "text"},
+            {"key": "adminUserId", "value": "", "type": "text"},
+            {"key": "targetUserId", "value": "", "type": "text"}
+          ]
+        },
+        "url": {
+          "raw": "http://54.253.170.157/api/v1/groups/make-admin",
+          "protocol": "http",
+          "host": ["http://54.253.170.157/api/v1"],
+          "path": ["groups", "make-admin"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Group Admins",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://54.253.170.157/api/v1/groups/admins/:groupId",
+          "protocol": "http",
+          "host": ["http://54.253.170.157/api/v1"],
+          "path": ["groups", "admins", ":groupId"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Groups",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://54.253.170.157/api/v1/groups",
+          "protocol": "http",
+          "host": ["http://54.253.170.157/api/v1"],
+          "path": ["groups"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Generate Slug",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "name", "value": "", "type": "text"}
+          ]
+        },
+        "url": {
+          "raw": "http://54.253.170.157/api/v1/groups/slug",
+          "protocol": "http",
+          "host": ["http://54.253.170.157/api/v1"],
+          "path": ["groups", "slug"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Toggle Mute Status",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "groupId", "value": "", "type": "text"},
+            {"key": "userId", "value": "", "type": "text"}
+          ]
+        },
+        "url": {
+          "raw": "http://54.253.170.157/api/v1/groups/mute-unmute",
+          "protocol": "http",
+          "host": ["http://54.253.170.157/api/v1"],
+          "path": ["groups", "mute-unmute"]
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -9,13 +9,15 @@ import mongoose from "mongoose";
  * @route   POST /api/pages
  * @access  Private
  */
-const createPage = asyncHandler(async (req, res) => {
+export const createPage = asyncHandler(async (req, res) => {
   try {
+    req.body.admin = mongoose.Types.ObjectId(req.params.user_id);
+  
     const page = await Page.create(req.body);
     res.status(201).json(page);
   } catch (error) {
     console.error('Error creating page:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(400).json({ error: 'Error creating page' });
   }
 });
 
@@ -24,14 +26,14 @@ const createPage = asyncHandler(async (req, res) => {
  * @route   GET /api/pages/:pageId
  * @access  Private
  */
-const getPageById = asyncHandler(async (req, res) => {
-  const pageId = mongoose.Types.ObjectId(req.params.pageId);
-
+export const getPageById = asyncHandler(async (req, res) => {
   try {
+    const pageId = mongoose.Types.ObjectId(req.params.pageId);
     const page = await Page.findById(pageId);
     if (!page) {
       res.status(404).json({ error: 'Page not found' });
     } else {
+      await Page.findByIdAndUpdate(pageId, { $inc: { views: 1 } }, { new: true });
       res.status(200).json(page);
     }
   } catch (error) {
@@ -45,10 +47,24 @@ const getPageById = asyncHandler(async (req, res) => {
  * @route   PUT /api/pages/:pageId
  * @access  Private
  */
-const updatePage = asyncHandler(async (req, res) => {
-  const pageId = mongoose.Types.ObjectId(req.params.pageId);
+export const updatePage = asyncHandler(async (req, res) => {
+  
 
   try {
+    // const fieldd = ["title",
+    //               "slug",
+    //               "public",
+    //               "Age_restiction",
+    //               "moderators_edit",
+    //               "profile_picture",
+    //               "cover_picture",
+    //               "desc",
+    //               "posts",
+    //               "views"
+    //             ]
+
+    // for()
+    const pageId = mongoose.Types.ObjectId(req.params.pageId);
     const page = await Page.findByIdAndUpdate(pageId, req.body, { new: true });
     res.status(200).json(page);
   } catch (error) {
@@ -62,10 +78,9 @@ const updatePage = asyncHandler(async (req, res) => {
  * @route   DELETE /api/pages/:pageId
  * @access  Private
  */
-const deletePage = asyncHandler(async (req, res) => {
-  const pageId = mongoose.Types.ObjectId(req.params.pageId);
-
+export const deletePage = asyncHandler(async (req, res) => {
   try {
+    const pageId = mongoose.Types.ObjectId(req.params.pageId);
     const result = await Page.findByIdAndDelete(pageId);
     res.status(200).json(result);
   } catch (error) {
@@ -79,10 +94,9 @@ const deletePage = asyncHandler(async (req, res) => {
  * @route   PUT /api/pages/:pageId/increment-views
  * @access  Private
  */
-const incrementPageViews = asyncHandler(async (req, res) => {
-  const pageId = mongoose.Types.ObjectId(req.params.pageId);
-
+export const incrementPageViews = asyncHandler(async (req, res) => {
   try {
+    const pageId = mongoose.Types.ObjectId(req.params.pageId);
     const page = await Page.findByIdAndUpdate(pageId, { $inc: { views: 1 } }, { new: true });
     res.status(200).json(page);
   } catch (error) {
@@ -96,11 +110,11 @@ const incrementPageViews = asyncHandler(async (req, res) => {
  * @route   PUT /api/pages/:pageId/toggle-like/:userId
  * @access  Private
  */
-const toggleLikePage = asyncHandler(async (req, res) => {
-  const userId = mongoose.Types.ObjectId(req.params.userId);
-  const pageId = mongoose.Types.ObjectId(req.params.pageId);
+export const toggleLikePage = asyncHandler(async (req, res) => {
 
   try {
+    const userId = mongoose.Types.ObjectId(req.params.userId);
+    const pageId = mongoose.Types.ObjectId(req.params.pageId);
     const page = await Page.findById(pageId);
 
     if (!page) {
@@ -128,7 +142,7 @@ const toggleLikePage = asyncHandler(async (req, res) => {
  * @route   PUT /api/pages/:pageId/toggle-follow/:userId
  * @access  Private
  */
-const toggleFollowPage = asyncHandler(async (req, res) => {
+export const toggleFollowPage = asyncHandler(async (req, res) => {
   const userId = mongoose.Types.ObjectId(req.params.userId);
   const pageId = mongoose.Types.ObjectId(req.params.pageId);
 
@@ -160,18 +174,17 @@ const toggleFollowPage = asyncHandler(async (req, res) => {
  * @route   PUT /api/pages/:pageId/add-moderators
  * @access  Private
  */
-const addModeratorsToPage = asyncHandler(async (req, res) => {
-  const pageId = mongoose.Types.ObjectId(req.params.pageId);
-  const moderatorIds = req.body.moderatorIds;
-
+export const addModeratorsToPage = asyncHandler(async (req, res) => {
   try {
+    const pageId = mongoose.Types.ObjectId(req.params.pageId);
+    const moderatorIds = req.body.moderatorIds;
     const page = await Page.findById(pageId);
 
     moderatorIds.forEach((moderatorId) => {
       if (!page.moderators.includes(moderatorId)) {
         page.moderators.push(moderatorId);
       } else {
-        throw new Error(`User ${moderatorId} is already a moderator of the page.`);
+        return res.status(400).json({error: `User ${moderatorId} is already a moderator of the page.`});
       }
     });
 
@@ -188,22 +201,27 @@ const addModeratorsToPage = asyncHandler(async (req, res) => {
  * @route   PUT /api/pages/:pageId/remove-moderators
  * @access  Private
  */
-const removeModeratorsFromPage = asyncHandler(async (req, res) => {
-  const pageId = mongoose.Types.ObjectId(req.params.pageId);
-  const moderatorIds = req.body.moderatorIds;
-
+export const removeModeratorsFromPage = asyncHandler(async (req, res) => {
+  
   try {
+    const pageId = mongoose.Types.ObjectId(req.params.pageId);
+  const moderatorIds = req.body.moderatorIds.map((id) => mongoose.Types.ObjectId(id));
     const page = await Page.findByIdAndUpdate(
       pageId,
       { $pullAll: { moderators: moderatorIds } },
       { new: true }
     );
 
-    moderatorIds.forEach((moderatorId) => {
-      if (!page.moderators.includes(moderatorId)) {
-        throw new Error(`User ${moderatorId} is not a moderator of the page.`);
-      }
-    });
+    if (!page) {
+      return res.status(404).json({ error: 'Page not found' });
+    }
+
+    // Check if any provided moderatorIds were not found in page.moderators
+    // const notFoundModerators = moderatorIds.filter((moderatorId) => !page.moderators.includes(moderatorId));
+
+    // if (notFoundModerators.length > 0) {
+    //   console.warn(`The following moderatorIds were not found in page.moderators: ${notFoundModerators}`);
+    // }
 
     res.status(200).json(page);
   } catch (error) {
@@ -212,6 +230,142 @@ const removeModeratorsFromPage = asyncHandler(async (req, res) => {
   }
 });
 
-  
-  
-  
+/**
+ * @desc    Create new questions
+ * @route   POST /api/pages/:pageId/questions
+ * @access  Private
+ */
+export const createQuestions = asyncHandler(async (req, res) => {
+  try {
+    const { pageId } = req.params;
+    const questions = req.body;
+
+    // Convert pageId to Mongoose ObjectId
+    const mongoosePageId = mongoose.Types.ObjectId(pageId);
+
+    const updatedPage = await Page.findByIdAndUpdate(
+      mongoosePageId,
+      { $push: { joining_questions: { $each: questions } } },
+      { new: true }
+    );
+
+    if (!updatedPage) {
+      return res.status(404).json({ error: 'Page not found' });
+    }
+
+    res.status(201).json(updatedPage);
+  } catch (error) {
+    console.error('Error creating questions:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+/**
+ * @desc    Get questions for a page
+ * @route   GET /api/pages/:pageId/questions
+ * @access  Public
+ */
+export const getQuestions = asyncHandler(async (req, res) => {
+  try {
+    const { pageId } = req.params;
+
+    // Convert pageId to Mongoose ObjectId
+    const mongoosePageId = mongoose.Types.ObjectId(pageId);
+
+    // Find the page by ID and retrieve the joining_questions array
+    const page = await Page.findById(mongoosePageId, 'joining_questions');
+
+    if (!page) {
+      return res.status(404).json({ error: 'Page not found' });
+    }
+
+    res.status(200).json(page.joining_questions);
+  } catch (error) {
+    console.error('Error getting questions:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+/**
+ * @desc    Update questions
+ * @route   PUT /api/pages/:pageId/questions
+ * @access  Private
+ */
+export const updateQuestions = asyncHandler(async (req, res) => {
+  try {
+    const { pageId } = req.params;
+    const updatedQuestions = req.body;
+
+    // Convert pageId to Mongoose ObjectId
+    const mongoosePageId = mongoose.Types.ObjectId(pageId);
+
+    const existingPage = await Page.findById(mongoosePageId);
+
+    if (!existingPage) {
+      return res.status(404).json({ error: 'Page not found' });
+    }
+
+    const updatedPage = {
+      ...existingPage.toObject(), // Convert Mongoose model to plain JavaScript object
+      joining_questions: existingPage.joining_questions.map((question) => {
+        const updatedQuestion = updatedQuestions.find((q) => q._id.toString() === question._id.toString());
+        return updatedQuestion ? { ...question.toObject(), ...updatedQuestion } : question;
+      }),
+    };
+
+    // Save the updated page
+    const savedPage = await existingPage.updateOne(updatedPage, { new: true });
+
+    res.status(200).json(savedPage);
+  } catch (error) {
+    console.error('Error updating questions:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+/**
+ * @desc    Delete questions by ID
+ * @route   DELETE /api/pages/:pageId/questions
+ * @access  Private
+ */
+export const deleteQuestionsById = asyncHandler(async (req, res) => {
+  try {
+    const { pageId } = req.params;
+    const questionIdsToDelete = req.body;
+
+    // Convert pageId to Mongoose ObjectId
+    const mongoosePageId = mongoose.Types.ObjectId(pageId);
+
+    // Find the page by ID
+    const existingPage = await Page.findById(mongoosePageId);
+
+    if (!existingPage) {
+      return res.status(404).json({ error: 'Page not found' });
+    }
+
+    // Filter out questions to delete
+    const questionsToKeep = existingPage.joining_questions.filter(
+      (question) => !questionIdsToDelete.includes(question._id.toString())
+    );
+
+    // Update the page with the remaining questions
+    const updatedPage = {
+      ...existingPage.toObject(),
+      joining_questions: questionsToKeep,
+    };
+
+    // Save the updated page
+    const savedPage = await existingPage.updateOne(updatedPage, { new: true });
+
+    res.status(200).json(savedPage);
+  } catch (error) {
+    console.error('Error deleting questions:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+

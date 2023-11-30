@@ -8,6 +8,7 @@ export const postSchema = new mongoose.Schema(
     },
     photo: {
       type: String,
+      default: null,
     },
     likes: {
       type: [mongoose.Schema.Types.ObjectId], // Define as an array of ObjectId values.
@@ -31,6 +32,7 @@ export const postSchema = new mongoose.Schema(
     },
     location: {
       type: String,
+      default: null,
     },
     friendTags: {
       type: [mongoose.Schema.Types.ObjectId], // Define as an array of ObjectId values.

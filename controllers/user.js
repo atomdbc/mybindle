@@ -91,13 +91,11 @@ export const emailRegister = asyncHandler(async (req, res) => {
       }
   
       const hashedPassword = await bcrypt.hash(password, 10);
-	  const verifiedWith = email;
-    const phoneNumber = email
+	    const verifiedWith = email;
       const user = new userModel({
         firstName,
         lastName,
         email,
-        phoneNumber,
         password: hashedPassword,
         address,
         website,
@@ -114,7 +112,7 @@ export const emailRegister = asyncHandler(async (req, res) => {
         aboutyourself,
         coverPhoto,
         profilePhoto,
-		verifiedWith
+		    verifiedWith
       });
   
       // Return save result as a response
@@ -194,7 +192,6 @@ export const phoneRegister = asyncHandler(async (req, res) => {
         return res.status(400).send({ error: "Website already exists, please choose another one" });
       }
 
-      const email = phoneNumber
   
       const hashedPassword = await bcrypt.hash(password, 10);
 	    const verifiedWith = phoneNumber;
@@ -202,7 +199,6 @@ export const phoneRegister = asyncHandler(async (req, res) => {
       const user = new userModel({
         firstName,
         lastName,
-        email,
         phoneNumber,
         password: hashedPassword,
         address,
@@ -225,8 +221,8 @@ export const phoneRegister = asyncHandler(async (req, res) => {
   
       // Return save result as a response
       const result = await user.save();
-      const status = await sendVerification(phoneNumber);
-      res.status(201).send({ msg: "User Created Successfully Check Your phone Number for OTP Code" , token: generate_jwt({email: email, id: result._id.toString(), phoneNumber: phoneNumber}, '5m')});
+      // const status = await sendVerification(phoneNumber);
+      res.status(201).send({ msg: "User Created Successfully Check Your phone Number for OTP Code" , token: generate_jwt({email: phoneNumber, id: result._id.toString(), phoneNumber: phoneNumber}, '1h')});
     } catch (error) {
       console.log(error)
       res.status(500).send({
@@ -236,9 +232,7 @@ export const phoneRegister = asyncHandler(async (req, res) => {
 });
 
 
-// (async() => {
-//   console.log(await sendVerification("+2349025162207"));
-// })();
+
 
 // Function to delete all user records
 // const deleteAllUsers = async () => {
@@ -286,7 +280,7 @@ export const resend_phone_2FA = asyncHandler(async (req, res) => {
         // Verify token
         const decode = jwt.verify(token, process.env.JWT_SECRET);
         
-        console.log(decode)
+        // console.log(decode)
         const status = await sendVerification(decode.user.phoneNumber);
 
         // Send otp to user
@@ -430,6 +424,56 @@ export const verify_2FA = asyncHandler(async (req, res, next)=> {
     }
 });
 
+/**
+ * 
+ */
+
+export const login = asyncHandler(async (req, res) => {
+  try {
+    let user = null;
+    let access_token = null
+    const { phoneNumber, email, password } = req.body;
+    if (phoneNumber && email) {
+      return res.status(400).json({error: "Email and phoneNumber can not be present"});
+    };
+
+    if (phoneNumber) {
+      user = await userModel.findOne({ phoneNumber: phoneNumber});
+      if (!user.isVerified) {
+        // const status = await sendVerification(phoneNumber);
+        access_token =  generate_jwt({email: phoneNumber, id: user._id.toString(), phoneNumber: phoneNumber}, '1h');
+      }
+    } else if (email) {
+      user = await userModel.findOne({ email: email });
+      if (!user.isVerified) {
+        access_token = generate_jwt({email: email, id: user._id.toString(), code: random_num}, '1h')
+        const random_num = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+        // console.log(random_num);
+
+        // const sent = await sendEmail(email, 'Two Factor Authentification', `Your verification code is \n ${random_num}`);
+      }
+      
+    } else {
+      return res.status(400).json({ error: "Invalid Request" });
+    }
+
+    if (!user) return res.status(400).json({ error: "Email or password incorrect!!" })
+
+    if (!user.isVerified) {
+      return res.status(401).json({error: "User not verified Check for Email/phone for verification", token: access_token})
+    }
+    const pass =  await bcrypt.compare(password, user.password)
+    if (!pass)  return res.status(401).json({error: "Email or password incorrect!!"});
+
+    delete user['password']
+    return res.json({user, access_token: generate_jwt({id: user.id}, "5h") })
+  } catch(error) {
+    console.log(error)
+    return res.status(500).json({error: "Internal server error"})
+  }
+})
+
+
 
 /**
  * auth_passport - for passport authentication using google
@@ -454,6 +498,8 @@ export const auth_passport = passport.use(new GoogleStrategy({
   /**
    * 
    */
+
+
 
   export const passport_callback = asyncHandler(async (req, res) => {
     return res.status.json({ req });
