@@ -11,6 +11,7 @@ import groupRouter from './router/group_route.js';
 import post_router from './router/post_route.js';
 import { getCurrentTime } from './controllers/chatController.js';
 import pageRouter from './router/page_route.js';
+import file_uploader from './router/upload_route.js';
 
 dotenv.config();
 
@@ -20,16 +21,30 @@ app.use(express.json());
 app.use(cors());
 app.disable('x-powered-by');
 app.use(morgan('tiny'));
+app.use((error, req, res, next) => {
+    if (error instanceof multer.MulterError) {
+      res.status(400).send(`Error uploading files: ${error.message}`);
+    } else if (error) {
+      res.status(400).send(`Error: ${error.message}`);
+    } else {
+      next();
+    }
+});
+
 
 app.use('/api/v1/user', user_route);
 app.use('/api/v1', groupRouter);
 app.use('/api/v1/post', post_router);
 app.use('/api/v1/page', pageRouter)
+app.use('/api/v1', file_uploader)
+
 
 app.get('/', (req, res) => {
     res.status(201).json('home get');
 });
 
+
+mongoose.set('strictQuery', false);
 mongoose
     .connect(process.env.MONGO_URL, {})
     .then(() => {
