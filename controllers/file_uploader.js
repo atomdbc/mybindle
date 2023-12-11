@@ -15,41 +15,52 @@ const s3Uploader = () => {
 
   const uploadFiles = async (req, res) => {
     const files = req.files;
+    let folder = req.query.folder || '';
+    let subfolder = req.query.sub || '';
 
-    if (!files || files.length === 0) {
-      return res.status(400).send('No files uploaded.');
-    }
+  // Combine folder and subfolder
+  const combinedFolder = folder ? (subfolder ? `${folder}/${subfolder}` : folder) : subfolder;
 
-    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+  if (!files || files.length === 0) {
+    return res.status(400).send('No files uploaded.');
+  }
 
-    if (!bucketName) {
-      return res.status(500).send('AWS_S3_BUCKET_NAME environment variable is not set.');
-    }
+  const bucketName = process.env.AWS_S3_BUCKET_NAME;
 
-    console.log('Uploading to bucket:', bucketName);
+  if (!bucketName) {
+    return res.status(500).send('AWS_S3_BUCKET_NAME environment variable is not set.');
+  }
 
-    try {
-      const uploadPromises = files.map(async (file) => {
-        const params = {
-          Bucket: bucketName,
-          Key: file.originalname,
-          Body: file.buffer,
-          ContentType: file.mimetype,
-        };
-        await s3.send(new PutObjectCommand(params));
-        const s3Url = `https://${bucketName}.s3.amazonaws.com/${file.originalname}`;
-        console.log(`File uploaded to S3. S3 URL: ${s3Url}`);
-        return s3Url;
-      });
+  console.log('Uploading to bucket:', bucketName);
 
-      const uploadedUrls = await Promise.all(uploadPromises);
+  try {
+    const uploadPromises = files.map(async (file) => {
+      const timestamp = new Date().getTime();
+      const uniqueIdentifier = `${timestamp}_${file.originalname}`;
 
-      res.status(200).send(`Files uploaded to S3 successfully!\nS3 URLs:\n${uploadedUrls.join('\n')}`);
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error uploading files to S3');
-    }
-  };
+      const key = combinedFolder ? `${combinedFolder}/${uniqueIdentifier}` : uniqueIdentifier;
+
+      const params = {
+        Bucket: bucketName,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      };
+      await s3.send(new PutObjectCommand(params));
+      const s3Url = `https://${bucketName}.s3.amazonaws.com/${key}`;
+      console.log(`File uploaded to S3. S3 URL: ${s3Url}`);
+      return s3Url;
+    });
+
+    const uploadedUrls = await Promise.all(uploadPromises);
+
+    res.status(200).json({ url: uploadedUrls });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error uploading files to S3');
+  }
+};
+
 
   return {
     uploadFiles,
