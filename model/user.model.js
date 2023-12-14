@@ -130,6 +130,39 @@ export const UserSchema = new mongoose.Schema({
         type: String,
         required: [true, "Required"],
     },
+    sentRequests: {
+        type: Array,
+        default: [],
+    },
+
+    friendRequests: {
+        type: Array,
+        default: [],
+    },
+
+    blockedUsers: {
+        type: Array,
+        default: [],
+    },
+    archive: {
+        stories: {
+            type: Array,
+            default: [],
+        },
+        videos: {
+            type: Array,
+            default: [],
+        },
+        otherItems: {
+            type: Array,
+            default: [],
+        },
+    },
+
+    callTimestamps: {
+        type: Array,
+        default: [],
+    },
 
 }, { timestamps: true })
 

@@ -12,6 +12,7 @@ import post_router from './router/post_route.js';
 import { getCurrentTime } from './controllers/chatController.js';
 import pageRouter from './router/page_route.js';
 import file_uploader from './router/upload_route.js';
+import friendRoute from './router/friend_route.js';
 
 dotenv.config();
 
@@ -31,19 +32,6 @@ app.use((error, req, res, next) => {
     }
 });
 
-
-app.use('/api/v1/user', user_route);
-app.use('/api/v1', groupRouter);
-app.use('/api/v1/post', post_router);
-app.use('/api/v1/page', pageRouter)
-app.use('/api/v1', file_uploader)
-
-
-app.get('/', (req, res) => {
-    res.status(201).json('home get');
-});
-
-
 mongoose.set('strictQuery', false);
 mongoose
     .connect(process.env.MONGO_URL, {})
@@ -53,6 +41,22 @@ mongoose
     .catch((error) => {
         console.log(error);
     });
+
+
+app.use('/api/v1/user', user_route);
+app.use('/api/v1', groupRouter);
+app.use('/api/v1/post', post_router);
+app.use('/api/v1/page', pageRouter)
+app.use('/api/v1', file_uploader)
+app.use('/api/v1/friend', friendRoute)
+
+
+app.get('/', (req, res) => {
+    res.status(201).json('home get');
+});
+
+
+
 
 // Combine WebSocket and HTTP server
 const httpServer = http.createServer(app);

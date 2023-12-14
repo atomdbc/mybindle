@@ -1,6 +1,6 @@
 import express from 'express';
   
-  import { createGroup, deleteGroup, joinGroup, leaveGroup, makeGroupAdmin,getGroupAdmins,getGroups,generateSlug,toggleMuteStatus, updateGroup,} from '../controllers/groupController.js';
+import { createGroup, deleteGroup, joinGroup, leaveGroup, makeGroupAdmin,getGroupAdmins,getGroups,generateSlug,toggleMuteStatus, updateGroup,} from '../controllers/groupController.js';
 
 const groupRouter = express.Router();
 
