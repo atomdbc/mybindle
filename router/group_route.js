@@ -1,19 +1,19 @@
 import express from 'express';
   
 import { createGroup, deleteGroup, joinGroup, leaveGroup, makeGroupAdmin,getGroupAdmins,getGroups,generateSlug,toggleMuteStatus, updateGroup,} from '../controllers/groupController.js';
-
+import { authenticate } from '../middleWare/auth.js';
 const groupRouter = express.Router();
 
-groupRouter.post('/groups/create', createGroup);
-groupRouter.post('/groups/delete', deleteGroup);
-groupRouter.post('/groups/update', updateGroup);
-groupRouter.post('/groups/join', joinGroup);
-groupRouter.post('/groups/leave', leaveGroup);
-groupRouter.post('/groups/make-admin', makeGroupAdmin);
-groupRouter.get('/groups/admins/:groupId', getGroupAdmins);
-groupRouter.get('/groups', getGroups);
-groupRouter.post('/groups/slug',generateSlug);
-groupRouter.post('/groups/mute-unmute',toggleMuteStatus);
+groupRouter.post('/groups/create', authenticate, createGroup);
+groupRouter.post('/groups/delete', authenticate, deleteGroup);
+groupRouter.post('/groups/update', authenticate,  updateGroup);
+groupRouter.post('/groups/join', authenticate, joinGroup);
+groupRouter.post('/groups/leave', authenticate, leaveGroup);
+groupRouter.post('/groups/make-admin', authenticate, makeGroupAdmin);
+groupRouter.get('/groups/admins/:groupId',authenticate, getGroupAdmins);
+groupRouter.get('/groups', authenticate, getGroups);
+groupRouter.post('/groups/slug', authenticate, generateSlug);
+groupRouter.post('/groups/mute-unmute', authenticate, toggleMuteStatus);
 
 
  

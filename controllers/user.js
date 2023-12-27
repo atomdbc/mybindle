@@ -9,7 +9,7 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import mongoose from 'mongoose';
 import dotenv  from 'dotenv';
-
+import _ from 'lodash';
 dotenv.config(); 
 
 
@@ -325,7 +325,7 @@ export const verify_phone_login_2FA = asyncHandler(async (req, res) => {
          
             // Verify otp
         
-            console.log(status)
+            // console.log(status)
             if (status == 'approved') {
                 const user = await userModel.findOneAndUpdate(
                   { _id: id }, // Match the user by their ObjectId
@@ -403,7 +403,6 @@ export const verify_2FA = asyncHandler(async (req, res, next)=> {
             const id = mongoose.Types.ObjectId(decode.user.id);
 
             if (decode.user.code == req.body.code) {
-              console.log(id)
               const user = await userModel.findOneAndUpdate(
                 { _id: id }, // Match the user by their ObjectId
                 { $set: {isVerified: true} },
@@ -433,21 +432,34 @@ export const login = asyncHandler(async (req, res) => {
     let user = null;
     let access_token = null
     const { phoneNumber, email, password } = req.body;
+    
     if (phoneNumber && email) {
       return res.status(400).json({error: "Email and phoneNumber can not be present"});
     };
 
     if (phoneNumber) {
       user = await userModel.findOne({ phoneNumber: phoneNumber});
+
+      const pass =  await bcrypt.compare(password, user.password)
+      if (!pass)  return res.status(401).json({error: "Email or password incorrect!!"});
+
       if (!user.isVerified) {
         // const status = await sendVerification(phoneNumber);
         access_token =  generate_jwt({email: phoneNumber, id: user._id.toString(), phoneNumber: phoneNumber}, '1h');
       }
+
     } else if (email) {
       user = await userModel.findOne({ email: email });
+
+      if (!user) return res.status(401).json({error: "Email or password incorrect!!"});
+    
+      const pass =  await bcrypt.compare(password, user.password)
+      if (!pass)  return res.status(401).json({error: "Email or password incorrect!!"});
+
+
       if (!user.isVerified) {
-        access_token = generate_jwt({email: email, id: user._id.toString(), code: random_num}, '1h')
         const random_num = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+        access_token = generate_jwt({email: email, id: user._id.toString(), code: random_num}, '1h')
         // console.log(random_num);
 
         // const sent = await sendEmail(email, 'Two Factor Authentification', `Your verification code is \n ${random_num}`);
@@ -459,11 +471,10 @@ export const login = asyncHandler(async (req, res) => {
 
     if (!user) return res.status(400).json({ error: "Email or password incorrect!!" })
 
-    if (!user.isVerified) {
-      return res.status(401).json({error: "User not verified Check for Email/phone for verification", token: access_token})
-    }
-    const pass =  await bcrypt.compare(password, user.password)
-    if (!pass)  return res.status(401).json({error: "Email or password incorrect!!"});
+    // if (!user.isVerified) {
+    //   return res.status(401).json({error: "User not verified Check for Email/phone for verification", token: access_token})
+    // }
+    
 
     delete user['password']
     return res.json({user, access_token: generate_jwt({id: user.id}, "5h") })
@@ -504,3 +515,212 @@ export const auth_passport = passport.use(new GoogleStrategy({
   export const passport_callback = asyncHandler(async (req, res) => {
     return res.status.json({ req });
   });
+
+
+
+
+function cleanObject(obj) {
+  const cleanedObject = {};
+
+  for (const key in obj) {
+      if (key == 'followers') continue;
+      if (key == 'followings') continue;
+      if (key == 'followRequests') continue;
+
+      if (obj.hasOwnProperty(key)) {
+          const value = obj[key];
+          if (value !== null && value !== '' && value !== ' ') {
+              cleanedObject[key] = value;
+          }
+      }
+  }
+
+  return cleanedObject;
+}
+
+
+/**
+ * updateProfile - to update user profile
+ * 
+ */
+  export const updateProfile = asyncHandler(async (req, res) => {
+    let user = '';
+    if (req.user.user.id != req.params.user_id) {
+      return res.status(401).json({error: "Unauthorized"});
+    };
+    const id = mongoose.Types.ObjectId(req.params.user_id);
+    try{
+      user = await userModel.findOne({ _id: id});
+    } catch { return res.status(401).json({error: "Invalid user_id"})};
+
+    try {
+      
+        // Check if email, nickname, phoneNumber, and website already exist in the database if they are provided
+      if (req.body.email) {
+      const emailResult = await userModel.findOne({ email: req.body.email });
+      if (emailResult) {
+        return res.status(400).send({ error: "Email already exists" });
+        };
+      }
+        
+      if (req.body.nickname) {
+      const nicknameResult = await userModel.findOne({ nickname: req.body.nickname });
+      if (nicknameResult) {
+        return res.status(400).send({ error: "Nickname already exists, please choose another one" });
+        };
+      }
+        
+      if (req.body.phoneNumber) {
+      const phoneResult =  await userModel.findOne({ phoneNumber: req.body.phoneNumber });
+      if (phoneResult) {
+        return res.status(400).send({ error: "Phone Number already exists, please choose another one" });
+        }
+    
+      }
+        
+      if (req.body.website) {
+      const websiteResult =  await userModel.findOne({ website: req.body.website });
+      if (websiteResult) {
+        return res.status(400).send({ error: "Website already exists, please choose another one" });
+        };
+      }
+
+      if (req.body.password) {
+        delete req.body.password
+      };
+
+        const new_object = cleanObject(req.body);
+        const update_user = await userModel.findOneAndUpdate(
+          { _id: id }, // Match the user by their ObjectId
+          { $set: new_object },
+          { new: true } // Return the updated document
+        );
+        
+
+        return res.status(200).json({message: "updated succesfully"})
+      } catch (error) {
+        console.log(error)
+        res.status(500).send({
+          error: "Please Try again, Internal error",
+        });
+      }
+  });
+
+
+/**
+ * forgetPassword - for forget password
+ * @email : the users email
+ */
+export const forgetPassword = asyncHandler(async (req, res) => {
+  // Check if the user exit in database
+  let user = await userModel.findOne({ email: req.body.email });
+  if (!user)
+      return res.status(401).json({error: "Invalid Credential"});
+
+  // Send verification to users email
+  const random_num = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+  // const sent = await sendEmail(req.body.email, 'ForgetPassword', `Your verification code is \n ${random_num}`);
+  console.log(random_num)
+  const sent = true
+  if (sent == true) {
+      return res.status(200).json({message: "An OTP code is sent to your Email please verify", access_token: generate_jwt({code: random_num, id: user.id, email: user.email}, "5m")});
+  } else {
+      return res.status(400).json({error: "Try again unable to send email"});
+  }
+
+})
+
+
+
+
+/**
+ * verifyForgetPassword - it verify the users token
+ * @token : from params
+ * @password : new user password
+ * @confirmPassword :  confirm password
+ */
+export const verifyForgetPassword = asyncHandler(async (req, res) => {
+
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      try {
+          // Get token from headers
+          const token = req.headers.authorization.split(' ')[1];
+          // Verify token
+          const decode = jwt.verify(token, process.env.JWT_SECRET);
+
+          // Check if passowrd match
+          if (req.body.password != req.body.confirmPassword)
+              return res.status(401).json({error: "password not match"})
+  
+          if (decode.user.code == req.body.code) {
+              // hash password
+              const id = mongoose.Types.ObjectId(decode.user.id);
+              const hash_password = await bcrypt.hash(req.body.password, 10);
+              const user = await userModel.findOneAndUpdate(
+                { _id: id }, // Match the user by their ObjectId
+                { $set: {password: hash_password} },
+                { new: true } // Return the updated document
+              );
+              return res.status(200).json({success: "Password Changed" });
+          };
+
+          return res.status(401).json({error: "Invalid otp code"});
+      } catch (error) {
+          if (error.name === 'TokenExpiredError')  {
+              return res.status(400).json({error: "Token expired, Try again!!"});
+          }
+          console.log(error)
+          return res.status(401).json({error: "Unauthorize"});
+      };
+  } else {
+      return res.status(401).json({error: "Unauthorize"});
+  };
+
+});
+
+  
+/**
+ * resetPassword - where user can reset there password
+ * 
+ */
+export const resetPassword = asyncHandler(async (req, res) => {
+  let user = null;
+  const id = mongoose.Types.ObjectId(req.params.user_id);
+    try{
+      user = await userModel.findOne({ _id: id});
+    } catch { return res.status(401).json({error: "Invalid user_id"})};
+
+
+  try {
+    // Verify token
+    const decode = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Password and confirm password
+    if (req.body.password  && req.body.password !== req.body.confirmPassword) {
+      const pass =  await bcrypt.compare(req.body.password, user.password)
+      if (!pass)  return res.status(401).json({error: "Email or password incorrect!!"});
+
+      if (decode.user.code == req.body.code) {
+        // hash password
+        const id = mongoose.Types.ObjectId(decode.user.id);
+        const hash_password = await bcrypt.hash(req.body.password, 10);
+        const user = await userModel.findOneAndUpdate(
+          { _id: id }, // Match the user by their ObjectId
+          { $set: {password: hash_password} },
+          { new: true } // Return the updated document
+        );
+        return res.status(200).json({success: "Password Changed" });
+    };
+
+    } else {
+      return res.status(400).send({ error: "Passwords do not match" });
+    }
+  } catch (error) {
+    return res.status(400).json({error: "Bad request"})
+
+  }
+
+})
+
+
+

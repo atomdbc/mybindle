@@ -54,6 +54,23 @@ export const pageSchema = new mongoose.Schema(
         type: Array,
         default: null,
     }, 
+    phone: {
+      type: String,
+      // unique: [true, "Phone Number Already Exists"],
+      default: null
+    },
+    website: {
+      type: Array,
+      default: [],
+    },
+    purpose: {
+      type: String,
+      default: null
+    },
+    kind: {
+      type: String,
+      default: null
+    },
     followers : {
         type: [mongoose.Schema.Types.ObjectId],
         default: []
@@ -97,3 +114,4 @@ export const pageSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("Page", pageSchema);
+

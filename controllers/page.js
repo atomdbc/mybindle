@@ -10,6 +10,9 @@ import mongoose from "mongoose";
  * @access  Private
  */
 export const createPage = asyncHandler(async (req, res) => {
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
   try {
     req.body.admin = mongoose.Types.ObjectId(req.params.user_id);
   
@@ -27,6 +30,9 @@ export const createPage = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const getPageById = asyncHandler(async (req, res) => {
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
   try {
     const pageId = mongoose.Types.ObjectId(req.params.pageId);
     const page = await Page.findById(pageId);
@@ -48,8 +54,9 @@ export const getPageById = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const updatePage = asyncHandler(async (req, res) => {
-  
-
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
   try {
     // const fieldd = ["title",
     //               "slug",
@@ -79,6 +86,9 @@ export const updatePage = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const deletePage = asyncHandler(async (req, res) => {
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
   try {
     const pageId = mongoose.Types.ObjectId(req.params.pageId);
     const result = await Page.findByIdAndDelete(pageId);
@@ -95,6 +105,9 @@ export const deletePage = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const incrementPageViews = asyncHandler(async (req, res) => {
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
   try {
     const pageId = mongoose.Types.ObjectId(req.params.pageId);
     const page = await Page.findByIdAndUpdate(pageId, { $inc: { views: 1 } }, { new: true });
@@ -107,13 +120,16 @@ export const incrementPageViews = asyncHandler(async (req, res) => {
 
 /**
  * @desc    Toggle like for a page
- * @route   PUT /api/pages/:pageId/toggle-like/:userId
+ * @route   PUT /api/pages/:pageId/toggle-like/:user_id
  * @access  Private
  */
 export const toggleLikePage = asyncHandler(async (req, res) => {
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
 
   try {
-    const userId = mongoose.Types.ObjectId(req.params.userId);
+    const userId = mongoose.Types.ObjectId(req.params.user_id);
     const pageId = mongoose.Types.ObjectId(req.params.pageId);
     const page = await Page.findById(pageId);
 
@@ -139,11 +155,14 @@ export const toggleLikePage = asyncHandler(async (req, res) => {
 
 /**
  * @desc    Toggle follow for a page
- * @route   PUT /api/pages/:pageId/toggle-follow/:userId
+ * @route   PUT /api/pages/:pageId/toggle-follow/:user_id
  * @access  Private
  */
 export const toggleFollowPage = asyncHandler(async (req, res) => {
-  const userId = mongoose.Types.ObjectId(req.params.userId);
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
+  const userId = mongoose.Types.ObjectId(req.params.user_id);
   const pageId = mongoose.Types.ObjectId(req.params.pageId);
 
   try {
@@ -175,6 +194,9 @@ export const toggleFollowPage = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const addModeratorsToPage = asyncHandler(async (req, res) => {
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
   try {
     const pageId = mongoose.Types.ObjectId(req.params.pageId);
     const moderatorIds = req.body.moderatorIds;
@@ -202,6 +224,9 @@ export const addModeratorsToPage = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const removeModeratorsFromPage = asyncHandler(async (req, res) => {
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
   
   try {
     const pageId = mongoose.Types.ObjectId(req.params.pageId);
@@ -236,6 +261,9 @@ export const removeModeratorsFromPage = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const createQuestions = asyncHandler(async (req, res) => {
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
   try {
     const { pageId } = req.params;
     const questions = req.body;
@@ -268,6 +296,9 @@ export const createQuestions = asyncHandler(async (req, res) => {
  * @access  Public
  */
 export const getQuestions = asyncHandler(async (req, res) => {
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
   try {
     const { pageId } = req.params;
 
@@ -295,6 +326,9 @@ export const getQuestions = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const updateQuestions = asyncHandler(async (req, res) => {
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
   try {
     const { pageId } = req.params;
     const updatedQuestions = req.body;
@@ -334,6 +368,9 @@ export const updateQuestions = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const deleteQuestionsById = asyncHandler(async (req, res) => {
+  if (req.user.user.id != req.params.user_id) {
+    return res.status(401).json({error: "Unauthorized"});
+  };
   try {
     const { pageId } = req.params;
     const questionIdsToDelete = req.body;

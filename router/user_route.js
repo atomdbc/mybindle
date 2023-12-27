@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { emailRegister, phoneRegister, resend_phone_2FA, verify_phone_login_2FA, auth_passport, passport_callback, resend_2FA, verify_2FA, login} from '../controllers/user.js';
+import { emailRegister, phoneRegister, resend_phone_2FA, verify_phone_login_2FA,
+         auth_passport, passport_callback, resend_2FA, verify_2FA, login, updateProfile, forgetPassword, verifyForgetPassword} from '../controllers/user.js';
 
 import dotenv  from 'dotenv';
-
+import { authenticate } from "../middleWare/auth.js";
 dotenv.config(); 
 
 
@@ -17,6 +18,9 @@ user_router.post('/verify-phone', verify_phone_login_2FA);
 user_router.get('/resend-email-otp', resend_2FA);
 user_router.post('/verify-email-2fa', verify_2FA);
 user_router.post('/login', login);
+user_router.post('/update-profile/:user_id', authenticate, updateProfile);
+user_router.post('/forget-password', forgetPassword);
+user_router.post('/verify-forget-password', verifyForgetPassword);
 
 
 /**====== Google login ===== */

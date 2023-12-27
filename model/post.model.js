@@ -11,8 +11,8 @@ export const postSchema = new mongoose.Schema(
       default: null,
     },
     likes: {
-      type: [mongoose.Schema.Types.ObjectId],
-      default: [],
+      type: [mongoose.Schema.Types.ObjectId], // Define as an array of ObjectId values.
+      default: [], // Set a default value as an empty array.
     },
     comments: [
       {
@@ -25,6 +25,7 @@ export const postSchema = new mongoose.Schema(
         },
       },
     ],
+    
     postedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -34,30 +35,21 @@ export const postSchema = new mongoose.Schema(
       default: null,
     },
     friendTags: {
-      type: [mongoose.Schema.Types.ObjectId],
-      default: [],
+      type: [mongoose.Schema.Types.ObjectId], // Define as an array of ObjectId values.
+      default: [], // Set a default value as an empty array.
     },
     sharewithgroups: {
-      type: [mongoose.Schema.Types.ObjectId],
-      default: [],
+      type: [mongoose.Schema.Types.ObjectId], // Define as an array of ObjectId values.
+      default: [], // Set a default value as an empty array.
     },
     sharewithpages: {
-      type: [mongoose.Schema.Types.ObjectId],
-      default: [],
-    },
-    isStory: {
-      type: Boolean,
-      default: false,
-    },
-    storyExpiresAt: {
-      type: Date,
+      type: [mongoose.Schema.Types.ObjectId], // Define as an array of ObjectId values.
+      default: [], // Set a default value as an empty array.
     },
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 
-const Post = mongoose.model("Post", postSchema);
-
-export default Post;
+export default mongoose.model("Post", postSchema);
