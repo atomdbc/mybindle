@@ -439,7 +439,8 @@ export const login = asyncHandler(async (req, res) => {
 
     if (phoneNumber) {
       user = await userModel.findOne({ phoneNumber: phoneNumber});
-
+      if (!user) return res.status(401).json({error: "phoneNumber or password incorrect!!"});
+      
       const pass =  await bcrypt.compare(password, user.password)
       if (!pass)  return res.status(401).json({error: "Email or password incorrect!!"});
 
