@@ -46,6 +46,49 @@ export const handleFriendRequest = asyncHandler(async (req, res) => {
   res.status(200).send({ message: 'Friend request sent successfully' });
 });
 
+export const getProfile = asyncHandler(async (req, res) => {
+  const userId = req.params.userId;
+  const user = await userModel.findById(userId);
+
+  if (!user) {
+    return res.status(404).send({ error: 'User not found' });
+  }
+
+  // Create a sanitized user object without the password field
+  const sanitizedUser = {
+    dateOfBirth: user.dateOfBirth,
+    _id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    phoneNumber: user.phoneNumber,
+    address: user.address,
+    website: user.website,
+    nickname: user.nickname,
+    country: user.country,
+    city: user.city,
+    gender: user.gender,
+    relationshipstatus: user.relationshipstatus,
+    education: user.education,
+    job: user.job,
+    purpose: user.purpose,
+    interest: user.interest,
+    aboutyourself: user.aboutyourself,
+    coverPhoto: user.coverPhoto,
+    profilePhoto: user.profilePhoto,
+    followers: user.followers,
+    followings: user.followings,
+    followRequests: user.followRequests,
+    isAdmin: user.isAdmin,
+    isVerified: user.isVerified,
+    friends: user.friends,
+    callTimestamps: user.callTimestamps,
+    __v: user.__v,
+  };
+
+  res.status(200).send({ userProfile: sanitizedUser });
+});
+
 
 export  const handleBlockUser = asyncHandler(async (req, res) => {
     const { userId, blockedUserId } = req.body;
@@ -125,4 +168,32 @@ export  const handleBlockUser = asyncHandler(async (req, res) => {
       res.status(500).send({ error: 'Internal Server Error' });
     }
   });
+
+
   
+  export const donationBadge = asyncHandler(async (req, res) => {
+    const { userId, newBadge } = req.params; 
+    
+    try {
+      const authenticatedUserId = req.user.user.id;
+    
+      if (authenticatedUserId !== userId) {
+        return res.status(403).send({ error: 'Unauthorized: You are not allowed to update another user\'s donation badge' });
+      }
+    
+      const user = await userModel.findById(userId);
+    
+      if (!user) {
+        return res.status(404).send({ error: 'User not found' });
+      }
+    
+      user.donationBadge = newBadge;
+    
+      await user.save();
+    
+      res.status(200).send({ message: 'Donation badge updated successfully', userProfile: user });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ error: 'Internal Server Error' });
+    }
+  });

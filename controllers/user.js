@@ -234,6 +234,7 @@ export const phoneRegister = asyncHandler(async (req, res) => {
 
 
 
+
 // Function to delete all user records
 // const deleteAllUsers = async () => {
 //   try {

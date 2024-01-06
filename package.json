@@ -15,6 +15,7 @@
     "@elasticemail/elasticemail-client": "github:elasticemail/elasticemail-js",
     "@elasticemail/elasticemail-client-ts-axios": "^4.0.22",
     "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.3.1",

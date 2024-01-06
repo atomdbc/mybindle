@@ -130,6 +130,10 @@ export const UserSchema = new mongoose.Schema({
         type: String,
         required: [true, "Required"],
     },
+    donationBadge: {
+        type: String,
+        default: "none",
+    },
 
 }, { timestamps: true })
 
