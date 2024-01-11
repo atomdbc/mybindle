@@ -10,7 +10,7 @@ const makePost = asyncHandler(async (req, res) => {
   };
   try{
       const { desc, photo, location, friendTags, sharewithgroups, sharewithpages } = req.body;
-      const userId = mongoose.Types.ObjectId(req.params.userId);
+      const userId = mongoose.Types.ObjectId(req.params.user_id);
     
       // Create an object with only the fields that are present in the request body
       const postFields = {
