@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { emailRegister, phoneRegister, resend_phone_2FA, verify_phone_login_2FA,
-         auth_passport, passport_callback, resend_2FA, verify_2FA, login, updateProfile, forgetPassword, verifyForgetPassword} from '../controllers/user.js';
+         auth_passport, passport_callback, resend_2FA, verify_2FA, login, updateProfile, forgetPassword, verifyForgetPassword, deleteUser} from '../controllers/user.js';
 
 import dotenv  from 'dotenv';
 import { authenticate } from "../middleWare/auth.js";
@@ -13,6 +13,7 @@ const user_router = Router();
 
 user_router.post('/email-register', emailRegister);
 user_router.post('/phone-register', phoneRegister);
+user_router.delete('/delete-user',authenticate, deleteUser);
 user_router.get('/resend-phone-otp', resend_phone_2FA);
 user_router.post('/verify-phone', verify_phone_login_2FA);
 user_router.get('/resend-email-otp', resend_2FA);
