@@ -6,6 +6,7 @@ const storySchema = new mongoose.Schema({
   friendTags: [{ type: mongoose.Schema.Types.ObjectId }],
   shareWithGroups: [{ type: mongoose.Schema.Types.ObjectId }],
   shareWithPages: [{ type: mongoose.Schema.Types.ObjectId }],
+  description: { type: String },
   createdAt: { type: Date, default: Date.now },
   expiresAt: { type: Date },
   location: { type: String, default: null },
