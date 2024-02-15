@@ -42,6 +42,7 @@ export const handleFriendRequest = asyncHandler(async (req, res) => {
   // Update receiver's friendRequests array
   receiver.friendRequests.push(senderId);
   await receiver.save();
+  
 
   res.status(200).send({ message: 'Friend request sent successfully' });
 });

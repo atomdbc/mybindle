@@ -5,7 +5,7 @@ import { authenticate } from '../middleWare/auth.js';
 
 const friendRoute = express.Router();
 
-friendRoute.post('/handle-request', authenticate, handleFriendRequest);
+friendRoute.post('/handle-request', handleFriendRequest);
 friendRoute.post('/handle-block', authenticate, handleBlockUser);
 friendRoute.post('/manage-archive', authenticate, manageArchive)
 friendRoute.post('/user-profile/:userId', authenticate, (req, res) => {
