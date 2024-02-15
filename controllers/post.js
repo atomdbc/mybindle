@@ -176,39 +176,40 @@ const getPostsForUser = asyncHandler(async (req, res) => {
 
   const makeStory = asyncHandler(async (req, res) => {
     if (req.user.user.id != req.params.user_id) {
-      return res.status(401).json({ error: "Unauthorized" });
+        return res.status(401).json({ error: "Unauthorized" });
     }
-  
+
     try {
-      const { videoUrl, friendTags, shareWithGroups, shareWithPages } = req.body;
-      console.log(req.body);
-      const userId = mongoose.Types.ObjectId(req.params.user_id);
-  
-      // Create an object with only the fields that are present in the request body
-      const storyFields = {
-        videoUrl,
-        postedBy: userId,
-      };
-  
-      // Add optional fields if they are present
-      if (friendTags) storyFields.friendTags = friendTags;
-      if (shareWithGroups) storyFields.shareWithGroups = shareWithGroups;
-      if (shareWithPages) storyFields.shareWithPages = shareWithPages;
-  
-      const newStory = new Story(storyFields);
-  
-      const expirationTime = new Date();
-      expirationTime.setHours(expirationTime.getHours() + 24);
-  
-      newStory.expiresAt = expirationTime;
-  
-      const savedStory = await newStory.save();
-      return res.status(201).json(savedStory);
+        const { videoUrl, friendTags, shareWithGroups, shareWithPages, description } = req.body;
+        console.log(req.body);
+        const userId = mongoose.Types.ObjectId(req.params.user_id);
+
+        const storyFields = {
+            videoUrl,
+            postedBy: userId,
+            description, // Add description field
+            createdAt: new Date() // Add timestamp for post creation
+        };
+
+        if (friendTags) storyFields.friendTags = friendTags;
+        if (shareWithGroups) storyFields.shareWithGroups = shareWithGroups;
+        if (shareWithPages) storyFields.shareWithPages = shareWithPages;
+
+        const newStory = new Story(storyFields);
+
+        const expirationTime = new Date();
+        expirationTime.setHours(expirationTime.getHours() + 24);
+
+        newStory.expiresAt = expirationTime;
+
+        const savedStory = await newStory.save();
+        return res.status(201).json(savedStory);
     } catch (error) {
-      console.error("Error creating story:", error);
-      return res.status(500).json({ error: "Internal Server Error" });
+        console.error("Error creating story:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
     }
-  });
+});
+
 
 
   const getStoryForUser = asyncHandler(async (req, res) => {
