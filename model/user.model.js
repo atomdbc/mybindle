@@ -134,6 +134,18 @@ export const UserSchema = new mongoose.Schema({
         type: String,
         default: "none",
     },
+    friendRequests: {
+        type: Array,
+        default: [],
+    },
+    sentRequests: {
+        type: Array,
+        default: [],
+    },
+    blockedUsers: {
+        type: Array,
+        default: [],
+    },
 
 }, { timestamps: true })
 

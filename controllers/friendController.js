@@ -5,46 +5,60 @@ import userModel from '../model/user.model.js'; // Adjust the path based on your
 export const handleFriendRequest = asyncHandler(async (req, res) => {
   const { senderId, receiverId } = req.body;
 
-  // Check if both sender and receiver exist
-  const [sender, receiver] = await Promise.all([
-    userModel.findById(senderId),
-    userModel.findById(receiverId),
-  ]);
+  try {
+    // Authenticate user
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
-  if (!sender || !receiver) {
-    return res.status(404).send({ error: 'Sender or receiver not found' });
+    // Check if both sender and receiver exist
+    const [sender, receiver] = await Promise.all([
+      userModel.findById(senderId),
+      userModel.findById(receiverId),
+    ]);
+
+    if (!sender || !receiver) {
+      return res.status(404).send({ error: 'Sender or receiver not found' });
+    }
+
+    // Check if the request has already been sent
+    const senderIndex = sender.sentRequests.indexOf(receiverId);
+    const receiverIndex = receiver.friendRequests.indexOf(senderId);
+
+    if (senderIndex !== -1 || receiverIndex !== -1) {
+      // If the request exists, remove it
+      sender.sentRequests.splice(senderIndex, 1);
+      receiver.friendRequests.splice(receiverIndex, 1);
+
+      // Save changes to the database
+      await Promise.all([sender.save(), receiver.save()]);
+
+      return res.status(200).send({ message: 'Friend request removed successfully' });
+    }
+
+    // If the request doesn't exist, send it
+    // Initialize arrays if they don't exist
+    sender.sentRequests = sender.sentRequests || [];
+    receiver.friendRequests = receiver.friendRequests || [];
+
+    // Update sender's sentRequests array
+    sender.sentRequests.push(receiverId);
+    await sender.save();
+
+    // Update receiver's friendRequests array
+    receiver.friendRequests.push(senderId);
+    await receiver.save();
+
+    res.status(200).send({ message: 'Friend request sent successfully' });
+  } catch (error) {
+    console.error('Error handling friend request:', error);
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    res.status(500).json({ error: 'Internal server error' });
   }
-
-  // Check if the request has already been sent
-  const senderIndex = sender.sentRequests.indexOf(receiverId);
-  const receiverIndex = receiver.friendRequests.indexOf(senderId);
-
-  if (senderIndex !== -1 || receiverIndex !== -1) {
-    // If the request exists, remove it
-    sender.sentRequests.splice(senderIndex, 1);
-    receiver.friendRequests.splice(receiverIndex, 1);
-
-    // Save changes to the database
-    await Promise.all([sender.save(), receiver.save()]);
-
-    return res.status(200).send({ message: 'Friend request removed successfully' });
-  }
-
-  // If the request doesn't exist, send it
-  // Initialize arrays if they don't exist
-  sender.sentRequests = sender.sentRequests || [];
-  receiver.friendRequests = receiver.friendRequests || [];
-
-  // Update sender's sentRequests array
-  sender.sentRequests.push(receiverId);
-  await sender.save();
-
-  // Update receiver's friendRequests array
-  receiver.friendRequests.push(senderId);
-  await receiver.save();
-
-  res.status(200).send({ message: 'Friend request sent successfully' });
 });
+
 
 export const getProfile = asyncHandler(async (req, res) => {
   const userId = req.params.userId;
