@@ -21,6 +21,11 @@ export const handleFriendRequest = asyncHandler(async (req, res) => {
       return res.status(404).send({ error: 'Sender or receiver not found' });
     }
 
+    // Check if the receiver is already in the sender's friends list
+    if (sender.friends.includes(receiverId)) {
+      return res.status(400).send({ error: 'You are already friends with this user' });
+    }
+
     // Check if the request has already been sent
     const senderIndex = sender.sentRequests.indexOf(receiverId);
     const receiverIndex = receiver.friendRequests.indexOf(senderId);
@@ -58,6 +63,172 @@ export const handleFriendRequest = asyncHandler(async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+export const acceptFriendRequest = asyncHandler(async (req, res) => {
+  const { senderId, receiverId } = req.body;
+
+  try {
+    // Authenticate user
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Check if both sender and receiver exist
+    const [sender, receiver] = await Promise.all([
+      userModel.findById(senderId),
+      userModel.findById(receiverId),
+    ]);
+
+    if (!sender || !receiver) {
+      return res.status(404).send({ error: 'Sender or receiver not found' });
+    }
+
+    // Check if the request exists
+    const senderIndex = sender.sentRequests.indexOf(receiverId);
+    const receiverIndex = receiver.friendRequests.indexOf(senderId);
+    
+    if (senderIndex === -1 || receiverIndex === -1) {
+      // If friend request not found, add or remove based on current state
+      if (senderIndex === -1 && receiverIndex === -1) {
+        // If neither sent nor received, send friend request
+        sender.sentRequests.push(receiverId);
+        receiver.friendRequests.push(senderId);
+      } else {
+        // If already sent or received, remove from friends list
+        const friendIndexSender = sender.friends.indexOf(receiverId);
+        const friendIndexReceiver = receiver.friends.indexOf(senderId);
+        if (friendIndexSender !== -1) sender.friends.splice(friendIndexSender, 1);
+        if (friendIndexReceiver !== -1) receiver.friends.splice(friendIndexReceiver, 1);
+      }
+
+      // Save changes to the database
+      await Promise.all([sender.save(), receiver.save()]);
+
+      return res.status(200).send({ message: 'Friend request status toggled successfully' });
+    }
+
+    // If the sender and receiver are not already friends
+    if (!sender.friends.includes(receiverId) && !receiver.friends.includes(senderId)) {
+      // Remove friend request from sender and receiver
+      sender.sentRequests.splice(senderIndex, 1);
+      receiver.friendRequests.splice(receiverIndex, 1);
+
+      // Add each other to friends list
+      sender.friends.push(receiverId);
+      receiver.friends.push(senderId);
+
+      // Save changes to the database
+      await Promise.all([sender.save(), receiver.save()]);
+    }
+
+    return res.status(200).send({ message: 'Friend request accepted successfully' });
+  } catch (error) {
+    console.error('Error accepting friend request:', error);
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+export const getFriendRequests = asyncHandler(async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Authenticate user
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Find the user
+    const user = await userModel.findById(userId);
+
+    // Check if user exists
+    if (!user) {
+      return res.status(404).send({ error: 'User not found' });
+    }
+
+    // Get friend requests for the user
+    const friendRequests = await userModel.find({ _id: { $in: user.friendRequests } }, {
+      firstName: 1,
+      lastName: 1,
+      phoneNumber: 1,
+      address: 1,
+      website: 1,
+      nickname: 1,
+      country: 1,
+      city: 1,
+      gender: 1,
+      relationshipstatus: 1,
+      education: 1,
+      job: 1,
+      purpose: 1,
+      interest: 1,
+      aboutyourself: 1,
+      coverPhoto: 1,
+      profilePhoto: 1,
+      friends: 1,
+      createdAt: 1,
+      updatedAt: 1
+    });
+
+    res.status(200).json({ friendRequests });
+  } catch (error) {
+    console.error('Error getting friend requests:', error);
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+export const deleteFriendRequest = asyncHandler(async (req, res) => {
+  const { senderId, receiverId } = req.body;
+
+  try {
+    // Authenticate user
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Check if both sender and receiver exist
+    const [sender, receiver] = await Promise.all([
+      userModel.findById(senderId),
+      userModel.findById(receiverId),
+    ]);
+
+    if (!sender || !receiver) {
+      return res.status(404).send({ error: 'Sender or receiver not found' });
+    }
+
+    // Check if the request exists
+    const senderIndex = sender.sentRequests.indexOf(receiverId);
+    const receiverIndex = receiver.friendRequests.indexOf(senderId);
+
+    if (senderIndex === -1 || receiverIndex === -1) {
+      return res.status(404).send({ error: 'Friend request not found' });
+    }
+
+    // Remove friend request from sender and receiver
+    sender.sentRequests.splice(senderIndex, 1);
+    receiver.friendRequests.splice(receiverIndex, 1);
+
+    // Save changes to the database
+    await Promise.all([sender.save(), receiver.save()]);
+
+    return res.status(200).send({ message: 'Friend request deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting friend request:', error);
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 
 
 export const getProfile = asyncHandler(async (req, res) => {
