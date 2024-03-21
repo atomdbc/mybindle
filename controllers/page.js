@@ -34,7 +34,7 @@ export const getPageById = asyncHandler(async (req, res) => {
     return res.status(401).json({error: "Unauthorized"});
   };
   try {
-    const pageId = mongoose.Types.ObjectId(req.params.pageId);
+    const pageId = mongoose.Types.ObjectId(req.params.page_id);
     const page = await Page.findById(pageId);
     if (!page) {
       res.status(404).json({ error: 'Page not found' });
@@ -47,6 +47,17 @@ export const getPageById = asyncHandler(async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+export const getPageByUserId = asyncHandler(async (req, res) =>{
+  try {
+    const userId =  req.params.user_id;
+    const pages = await Page.find({createdBy: userId})
+    res.status(200).json(pages);
+  } catch (error) {
+    console.error('Error getting pages by user ID', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+})
 
 /**
  * @desc    Update a page by ID
