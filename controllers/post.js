@@ -86,7 +86,7 @@ const getPostsForUser = asyncHandler(async (req, res) => {
       return res.status(401).json({error: "Unauthorized"});
     };
     try{
-    const userId = req.user.id;
+    const userId = req.params.user_id;
     const postId = req.params.postId;
   
     const post = await Post.findOne({ _id: postId, postedBy: userId });
