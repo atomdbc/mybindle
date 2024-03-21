@@ -24,7 +24,7 @@ const pageRouter = Router();
 pageRouter.post('/create-page/:user_id', authenticate, createPage);
 pageRouter.get('/get-page/:pageId/:user_id', authenticate, getPageById);
 pageRouter.put('/update-page/:pageId/:user_id', authenticate, updatePage);
-pageRouter.put('/update-page/:user_id', authenticate, getPageByUserId);
+pageRouter.get('/get-page/:user_id', authenticate, getPageByUserId);
 pageRouter.delete('/delete-page/:pageId/:user_id', authenticate, deletePage);
 pageRouter.get('/increment-views/:pageId/:user_id', authenticate, incrementPageViews);
 pageRouter.get('/toggle-like/:pageId/:user_id', authenticate, toggleLikePage);
