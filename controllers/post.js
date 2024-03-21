@@ -83,26 +83,26 @@ const getPostsForUser = asyncHandler(async (req, res) => {
   // @access  Private
   const deletePostForUser = asyncHandler(async (req, res) => {
     if (req.user.user.id != req.params.user_id) {
-      return res.status(401).json({error: "Unauthorized"});
-    };
-    try{
-    const userId = req.params.user_id;
-    const postId = req.params.postId;
-  
-    const post = await Post.findOne({ _id: postId, postedBy: userId });
-  
-    if (!post) {
-      return res.status(404).json({ error: 'Post not found' });
-    } else {
-      await post.remove();
-     return res.status(204).json({ success: 'Post deleted successfully' });
+        return res.status(401).json({ error: "Unauthorized" });
     }
 
-  } catch(error) {
-    return res.status(500).json({error: error})
-  }
-  });
-  
+    try {
+        const userId = req.params.user_id; // Corrected
+        const postId = req.params.post_id; // Corrected
+
+        const post = await Post.findOne({ _id: postId, postedBy: userId });
+
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        } else {
+            await post.remove();
+            return res.status(204).json({ success: 'Post deleted successfully' });
+        }
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+});
+
 
   const toggleLikeToPost = asyncHandler(async (req, res) => {
     if (req.user.user.id != req.params.user_id) {
