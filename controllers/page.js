@@ -10,19 +10,27 @@ import mongoose from "mongoose";
  * @access  Private
  */
 export const createPage = asyncHandler(async (req, res) => {
-  if (req.user.user.id != req.params.user_id) {
-    return res.status(401).json({error: "Unauthorized"});
-  };
   try {
-    req.body.admin = mongoose.Types.ObjectId(req.params.user_id);
+    if (req.user.user.id != req.params.user_id) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const userId = req.params.user_id;
+    req.body.admin = mongoose.Types.ObjectId(userId);
+    req.body.createdBy = mongoose.Types.ObjectId(userId);
   
     const page = await Page.create(req.body);
+    
     res.status(201).json(page);
   } catch (error) {
     console.error('Error creating page:', error);
-    res.status(400).json({ error: 'Error creating page' });
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Error creating page' });
   }
 });
+
 
 /**
  * @desc    Get a specific page by ID
