@@ -12,13 +12,13 @@ export const pageSchema = new mongoose.Schema(
     },
     public: {
         type: Boolean,
-        required: [true, "Please Public fied is require"]
+        required: [true, "Please Public field is required"]
     },
     members: {
         type:[mongoose.Schema.Types.ObjectId],
         default: []
     },
-    Age_restiction: {
+    ageRestriction: { // Changed Age_restiction to camelCase
         type: Number,
         default: 0,
     },
@@ -26,7 +26,7 @@ export const pageSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       required: [true, "Admin Id is required, which is the id of the user creating the page"]
     },
-    moderators_edit: {
+    moderatorsEdit: { // Changed moderators_edit to camelCase
         type: Boolean,
         default: false,
     },
@@ -34,19 +34,19 @@ export const pageSchema = new mongoose.Schema(
       type: [mongoose.Schema.Types.ObjectId],
       default: [],
     },
-    profile_picture: {
+    profilePicture: { // Changed profile_picture to camelCase
         type: String,
         default: null
     },
-    cover_picture: {
+    coverPicture: { // Changed cover_picture to camelCase
         type: String,
         default: null
     },
-    desc: {
+    description: { // Changed desc to camelCase
         type: String,
         required: [true, "Description is required"]
     },
-    joining_questions: {
+    joiningQuestions: { // Changed joining_questions to camelCase
         type: Array,
         default: []
     },
@@ -75,8 +75,12 @@ export const pageSchema = new mongoose.Schema(
         type: [mongoose.Schema.Types.ObjectId],
         default: []
     },
-
-    joining_questions: {
+    createdBy: { 
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    joiningQuestions: {
       type: [
         {
           text: {
@@ -88,9 +92,9 @@ export const pageSchema = new mongoose.Schema(
       default: [],
     },
     likes: {
-        type: [mongoose.Schema.Types.ObjectId], // Define as an array of ObjectId values.
-        default: [], // Set a default value as an empty array.
-      },
+        type: [mongoose.Schema.Types.ObjectId],
+        default: [],
+    },
     views: {
         type: Number,
         default: 0,
@@ -106,7 +110,6 @@ export const pageSchema = new mongoose.Schema(
         },
       },
     ],
-    
   },
   {
     timestamps: true
@@ -114,4 +117,3 @@ export const pageSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("Page", pageSchema);
-
