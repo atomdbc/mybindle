@@ -319,10 +319,8 @@ export  const handleBlockUser = asyncHandler(async (req, res) => {
       return res.status(404).send({ error: 'User not found' });
     }
   
-    // Check if the item type is valid
     const validItemTypes = ['stories', 'videos', 'otherItems'];
   
-    // Ensure itemType is defined and not an empty string
     const cleanedItemType = (itemType || '').toLowerCase().trim();
   
     if (!validItemTypes.includes(cleanedItemType)) {

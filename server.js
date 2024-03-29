@@ -13,6 +13,8 @@ import { getCurrentTime } from './controllers/chatController.js';
 import pageRouter from './router/page_route.js';
 import file_uploader from './router/upload_route.js';
 import friendRoute from './router/friend_route.js';
+import cloudRouter from './router/cloud_route.js';
+
 
 dotenv.config();
 
@@ -49,6 +51,8 @@ app.use('/api/v1/post', post_router);
 app.use('/api/v1/page', pageRouter)
 app.use('/api/v1', file_uploader)
 app.use('/api/v1/friend', friendRoute)
+app.use('/api/v1/cloud', cloudRouter)
+
 
 
 app.get('/', (req, res) => {
