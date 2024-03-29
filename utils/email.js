@@ -14,7 +14,7 @@ export const sendEmail = async (email_to, subject,  body) => {
      const emailsApi = new EmailsApi(config);
      const emailTransactionalMessageData = {
          Recipients: { 
-           To: [email_to] // maximum 50 recipients
+           To: [email_to]
          },
          Content: {
            Body: [

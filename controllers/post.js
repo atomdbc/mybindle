@@ -3,6 +3,8 @@ import Post from '../model/post.model.js';
 import Story from '../model/story.model.js';
 import asyncHandler from "express-async-handler"
 import mongoose from "mongoose";
+import { getCloudUser, Cloudstatus } from "../utils/cloudBalance.js";
+
 
 
 const makePost = asyncHandler(async (req, res) => {
@@ -66,7 +68,11 @@ const getPostsForUser = asyncHandler(async (req, res) => {
     const postId = mongoose.Types.ObjectId(req.params.post_id);
   
     const post = await Post.findOne({ _id: postId }).populate('postedBy', 'username');
-  
+    const userActivePlan = await getCloudUser(userId);
+    console.log(userActivePlan);
+    if (userActivePlan.activePlan!='free') {
+      await Cloudstatus(userActivePlan)
+    }
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
     } else {

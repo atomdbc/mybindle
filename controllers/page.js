@@ -2,6 +2,8 @@ import express from 'express';
 import Page from '../model/page.model.js'; 
 import asyncHandler from "express-async-handler"
 import mongoose from "mongoose";
+import { getCloudUser, Cloudstatus } from "../utils/cloudBalance.js";
+
 
 
 /**
@@ -20,6 +22,11 @@ export const createPage = asyncHandler(async (req, res) => {
     req.body.createdBy = mongoose.Types.ObjectId(userId);
   
     const page = await Page.create(req.body);
+    const userActivePlan = await getCloudUser(userId);
+    console.log(userActivePlan);
+    if (userActivePlan.activePlan!='free') {
+      await Cloudstatus(userActivePlan)
+    }
     
     res.status(201).json(page);
   } catch (error) {
@@ -50,6 +57,11 @@ export const getPageById = asyncHandler(async (req, res) => {
       await Page.findByIdAndUpdate(pageId, { $inc: { views: 1 } }, { new: true });
       res.status(200).json(page);
     }
+    const userActivePlan = await getCloudUser(req.params.user_id);
+    console.log(userActivePlan);
+    if (userActivePlan.activePlan!='free') {
+      await Cloudstatus(userActivePlan)
+    }
   } catch (error) {
     console.error('Error getting page by ID:', error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -59,8 +71,14 @@ export const getPageById = asyncHandler(async (req, res) => {
 export const getPageByUserId = asyncHandler(async (req, res) =>{
   try {
     const userId =  req.params.user_id;
+    
     const pages = await Page.find({createdBy: userId})
     res.status(200).json(pages);
+    const userActivePlan = await getCloudUser(userId);
+    console.log(userActivePlan);
+    if (userActivePlan.activePlan!='free') {
+      await Cloudstatus(userActivePlan)
+    }
   } catch (error) {
     console.error('Error getting pages by user ID', error);
     res.status(500).json({ error: 'Internal Server Error' });

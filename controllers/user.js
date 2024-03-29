@@ -3,6 +3,7 @@ import asyncHandler from "express-async-handler"
 import bcrypt from "bcrypt";
 import generate_jwt from "../utils/auth_middleWare.js";
 import { sendVerification, confirmVerification } from "../utils/phone_verification.js";
+import { getCloudUser, Cloudstatus } from "../utils/cloudBalance.js";
 import jwt from 'jsonwebtoken';
 import { sendEmail } from "../utils/email.js";
 import passport from "passport";
@@ -431,60 +432,68 @@ export const verify_2FA = asyncHandler(async (req, res, next)=> {
 export const login = asyncHandler(async (req, res) => {
   try {
     let user = null;
-    let access_token = null
+    let access_token = null;
     const { phoneNumber, email, password } = req.body;
-    
+
     if (phoneNumber && email) {
-      return res.status(400).json({error: "Email and phoneNumber can not be present"});
-    };
+      return res.status(400).json({error: "Email and phoneNumber cannot be present"});
+    }
 
     if (phoneNumber) {
-      user = await userModel.findOne({ phoneNumber: phoneNumber});
+      user = await userModel.findOne({ phoneNumber: phoneNumber });
       if (!user) return res.status(401).json({error: "phoneNumber or password incorrect!!"});
       
-      const pass =  await bcrypt.compare(password, user.password)
-      if (!pass)  return res.status(401).json({error: "Email or password incorrect!!"});
+      const pass = await bcrypt.compare(password, user.password);
+      if (!pass) return res.status(401).json({error: "phoneNumber or password incorrect!!"});
 
       if (!user.isVerified) {
         // const status = await sendVerification(phoneNumber);
-        access_token =  generate_jwt({email: phoneNumber, id: user._id.toString(), phoneNumber: phoneNumber}, '1h');
+        access_token = generate_jwt({ email: phoneNumber, id: user._id.toString(), phoneNumber: phoneNumber }, '1h');
       }
 
     } else if (email) {
       user = await userModel.findOne({ email: email });
 
       if (!user) return res.status(401).json({error: "Email or password incorrect!!"});
-    
-      const pass =  await bcrypt.compare(password, user.password)
-      if (!pass)  return res.status(401).json({error: "Email or password incorrect!!"});
 
+      const pass = await bcrypt.compare(password, user.password);
+      if (!pass) return res.status(401).json({error: "Email or password incorrect!!"});
 
       if (!user.isVerified) {
         const random_num = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-        access_token = generate_jwt({email: email, id: user._id.toString(), code: random_num}, '1h')
+        access_token = generate_jwt({ email: email, id: user._id.toString(), code: random_num }, '1h');
         // console.log(random_num);
-
-        // const sent = await sendEmail(email, 'Two Factor Authentification', `Your verification code is \n ${random_num}`);
+        // const sent = await sendEmail(email, 'Two Factor Authentication', `Your verification code is \n ${random_num}`);
       }
-      
+
+      try {
+        const userId = user._id.toString();
+
+        const pages = await Page.find({createdBy: userId})
+        res.status(200).json(pages);
+        const userActivePlan = await getCloudUser(userId);
+        console.log(userActivePlan);
+        if (userActivePlan.activePlan!='free') {
+          await Cloudstatus(userActivePlan)
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
     } else {
       return res.status(400).json({ error: "Invalid Request" });
     }
 
-    if (!user) return res.status(400).json({ error: "Email or password incorrect!!" })
+    if (!user) return res.status(400).json({ error: "Email or password incorrect!!" });
 
-    // if (!user.isVerified) {
-    //   return res.status(401).json({error: "User not verified Check for Email/phone for verification", token: access_token})
-    // }
-    
-
-    delete user['password']
-    return res.json({user, access_token: generate_jwt({id: user.id}, "5h") })
+    // Remove sensitive information from the user object before sending it in the response
+    delete user['password'];
+    // Return the user and access token in the response
+    return res.json({ user, access_token: generate_jwt({ id: user.id }, "5h") });
   } catch(error) {
-    console.log(error)
-    return res.status(500).json({error: "Internal server error"})
+    console.log(error);
+    return res.status(500).json({error: "Internal server error"});
   }
-})
+});
 
 
 
