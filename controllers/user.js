@@ -468,9 +468,6 @@ export const login = asyncHandler(async (req, res) => {
 
       try {
         const userId = user._id.toString();
-
-        const pages = await Page.find({createdBy: userId})
-        res.status(200).json(pages);
         const userActivePlan = await getCloudUser(userId);
         console.log(userActivePlan);
         if (userActivePlan.activePlan!='free') {
