@@ -436,63 +436,57 @@ export const login = asyncHandler(async (req, res) => {
     const { phoneNumber, email, password } = req.body;
 
     if (phoneNumber && email) {
-      return res.status(400).json({error: "Email and phoneNumber cannot be present"});
+      return res.status(400).json({error: "Email and phoneNumber cannot be present together."});
     }
 
-    if (phoneNumber) {
-      user = await userModel.findOne({ phoneNumber: phoneNumber });
-      if (!user) return res.status(401).json({error: "phoneNumber or password incorrect!!"});
-      
-      const pass = await bcrypt.compare(password, user.password);
-      if (!pass) return res.status(401).json({error: "phoneNumber or password incorrect!!"});
+    // Common logic for finding user and password verification
+    if (phoneNumber || email) {
+      const query = phoneNumber ? { phoneNumber } : { email };
+      user = await userModel.findOne(query);
 
-      if (!user.isVerified) {
-        // const status = await sendVerification(phoneNumber);
-        access_token = generate_jwt({ email: phoneNumber, id: user._id.toString(), phoneNumber: phoneNumber }, '1h');
+      if (!user) {
+        return res.status(401).json({error: `${phoneNumber ? 'phoneNumber' : 'Email'} or password incorrect!`});
       }
 
-    } else if (email) {
-      user = await userModel.findOne({ email: email });
-
-      if (!user) return res.status(401).json({error: "Email or password incorrect!!"});
-
-      const pass = await bcrypt.compare(password, user.password);
-      if (!pass) return res.status(401).json({error: "Email or password incorrect!!"});
-
-      if (!user.isVerified) {
-        const random_num = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
-        access_token = generate_jwt({ email: email, id: user._id.toString(), code: random_num }, '1h');
-        // console.log(random_num);
-        // const sent = await sendEmail(email, 'Two Factor Authentication', `Your verification code is \n ${random_num}`);
+      const isPasswordCorrect = await bcrypt.compare(password, user.password);
+      if (!isPasswordCorrect) {
+        return res.status(401).json({error: `${phoneNumber ? 'phoneNumber' : 'Email'} or password incorrect!`});
       }
 
-      try {
-        const userId = user._id.toString();
-        const userActivePlan = await getCloudUser(userId);
-        console.log(userActivePlan);
-        if (userActivePlan.activePlan!='free') {
-          await Cloudstatus(userActivePlan)
-        }
-      } catch (error) {
-        console.error('Error:', error);
+      // Generate access token based on the type of verification needed
+      if (!user.isVerified) {
+        access_token = phoneNumber ?
+          generate_jwt({ email: phoneNumber, id: user._id.toString(), phoneNumber }, '1h') :
+          generate_jwt({ email, id: user._id.toString(), code: Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000 }, '1h');
       }
     } else {
       return res.status(400).json({ error: "Invalid Request" });
     }
 
-    if (!user) return res.status(400).json({ error: "Email or password incorrect!!" });
+    if (user) {
+      const userId = user._id.toString();
+      checkUserCloudStatus(userId).catch(console.error); // Log the error if it occurs
 
-    // Remove sensitive information from the user object before sending it in the response
-    delete user['password'];
-    // Return the user and access token in the response
-    return res.json({ user, access_token: generate_jwt({ id: user.id }, "5h") });
-  } catch(error) {
-    console.log(error);
+      delete user.password; // Assuming this deletes the password from the response object correctly
+      access_token = generate_jwt({ id: user.id }, "5h");
+      return res.json({ user, access_token });
+    }
+  } catch (error) {
+    console.error(error);
     return res.status(500).json({error: "Internal server error"});
   }
 });
 
-
+const checkUserCloudStatus = async (userId) => {
+  try {
+    const userActivePlan = await getCloudUser(userId);
+    if (userActivePlan.activePlan != 'free') {
+      await Cloudstatus(userActivePlan);
+    }
+  } catch (error) {
+    console.error('Background task error:', error);
+  }
+};
 
 /**
  * auth_passport - for passport authentication using google

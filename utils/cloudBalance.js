@@ -14,18 +14,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const apiKey = process.env.LIVEDRIVE_KEY;
 const resellerEmail = process.env.RESELLER_EMAIL;
 
-mongoose.set('strictQuery', false);
-mongoose.connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
 
-// mongoose.connection.on('connected', () => {
-//     console.log('Connected to MongoDB');
-// });
-mongoose.connection.on('error', (err) => {
-    console.error('Error connecting to MongoDB:', err);
-});
 
 export const getCloudUser = async (userId) => {
     try {
@@ -36,9 +25,6 @@ export const getCloudUser = async (userId) => {
         return user;
     } catch (error) {
         console.error('Error fetching user:', error);
-        throw error;
-    } finally {
-        mongoose.connection.close(); 
     }
 };
 
