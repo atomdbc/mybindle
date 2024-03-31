@@ -274,6 +274,25 @@ export const getProfile = asyncHandler(async (req, res) => {
   res.status(200).send({ userProfile: sanitizedUser });
 });
 
+export const getAllUsers = asyncHandler(async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Find all users
+    const users = await userModel.find({});
+    
+    return res.status(200).json({ users });
+  } catch (error) {
+    console.error('Error getting all users:', error);
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 export  const handleBlockUser = asyncHandler(async (req, res) => {
     const { userId, blockedUserId } = req.body;
