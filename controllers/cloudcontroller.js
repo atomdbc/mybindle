@@ -18,7 +18,10 @@ export const createCloud = asyncHandler(async (req, res) => {
     const { userId, email, firstName, lastName, subdomain, password, confirmPassword , boughtPlan} = req.body;
 
     try {
-        // Check if the email already exists in the database
+        if (!req.user) {
+            return res.status(401).json({ error: 'Unauthorized' });
+          }
+          
         const existingUser = await userModel.findOne({ email });
         if (existingUser) {
             return res.status(400).send({ error: 'Email already exists' });
@@ -147,6 +150,10 @@ export const getCloudUser = asyncHandler(async (req, res) => {
         const userId = req.params.user_id;
         const user = await UserCloud.findOne({ owner: userId });
 
+        if (!req.user) {
+            return res.status(401).json({ error: 'Unauthorized' });
+          }
+
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -190,9 +197,13 @@ export const getCloudUser = asyncHandler(async (req, res) => {
 export const upgradeCloud = asyncHandler(async (req, res) => {
     const userId = req.params.user_id;
     const { newPlan } = req.body;
+    
 
     try {
-        // Validate user ID
+        if (!req.user) {
+            return res.status(401).json({ error: 'Unauthorized' });
+          }
+
         if (!userId) {
             return res.status(400).json({ error: 'Invalid user ID' });
         }
