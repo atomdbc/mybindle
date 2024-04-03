@@ -187,3 +187,40 @@ export const getCloudUser = asyncHandler(async (req, res) => {
 });
 
 
+export const upgradeCloud = asyncHandler(async (req, res) => {
+    const userId = req.params.user_id;
+    const { newPlan } = req.body;
+
+    try {
+        // Validate user ID
+        if (!userId) {
+            return res.status(400).json({ error: 'Invalid user ID' });
+        }
+
+        // Validate newPlan
+        if (!newPlan) {
+            return res.status(400).json({ error: 'New plan not provided' });
+        }
+
+        const user = await UserCloud.findOne({ owner: userId });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        user.activePlan = newPlan;
+        await user.save();
+
+        res.status(200).json(user);
+
+    } catch (error) {
+        console.error('Error upgrading user\'s plan:', error);
+
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ error: 'Invalid request data' });
+        } else if (error.name === 'MongoError') {
+            return res.status(500).json({ error: 'Database error' });
+        }
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
