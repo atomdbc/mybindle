@@ -11,6 +11,7 @@ const storySchema = new mongoose.Schema({
   expiresAt: { type: Date },
   location: { type: String, default: null },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  songid: [{ type: String , default: null }],
 },
 {
   timestamps: true,
