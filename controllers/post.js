@@ -12,13 +12,8 @@ const makePost = asyncHandler(async (req, res) => {
     return res.status(401).json({error: "Unauthorized"});
   };
   try{
-<<<<<<< HEAD
-      const { desc, photo, location, friendTags, sharewithgroups, sharewithpages } = req.body;
-      const userId = mongoose.Types.ObjectId(req.params.user_id);
-=======
       const { desc, photo, location, friendTags, sharewithgroups, sharewithpages , songid  } = req.body;
       const userId = mongoose.Types.ObjectId(req.params.userId);
->>>>>>> 16e0a6480a3a5308a98fb423494066481639b891
     
       const postFields = {
         desc,
@@ -335,4 +330,5 @@ const getPostsForUser = asyncHandler(async (req, res) => {
 
 
 export { getPostsForUser, getPostForUser, deletePostForUser, addCommentToPost, toggleLikeToPost, makePost, makeStory, getStoryForUser, getSpecificStory , deleteSpecificStory, toggleLikeToStory };
+
 
