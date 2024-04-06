@@ -12,15 +12,20 @@ const makePost = asyncHandler(async (req, res) => {
     return res.status(401).json({error: "Unauthorized"});
   };
   try{
+<<<<<<< HEAD
       const { desc, photo, location, friendTags, sharewithgroups, sharewithpages } = req.body;
       const userId = mongoose.Types.ObjectId(req.params.user_id);
+=======
+      const { desc, photo, location, friendTags, sharewithgroups, sharewithpages , songid  } = req.body;
+      const userId = mongoose.Types.ObjectId(req.params.userId);
+>>>>>>> 16e0a6480a3a5308a98fb423494066481639b891
     
-      // Create an object with only the fields that are present in the request body
       const postFields = {
         desc,
         photo,
         postedBy: userId,
         location,
+        songid,
       };
     
       // Add optional fields if they are present
@@ -31,6 +36,10 @@ const makePost = asyncHandler(async (req, res) => {
       const newPost = new Post(postFields);
     
       const savedPost = await newPost.save();
+      const userActivePlan = await getCloudUser(userId);
+    if (userActivePlan.activePlan!='free') {
+      await Cloudstatus(userActivePlan)
+    }
       return res.status(201).json(savedPost);
     } catch(error) {
       return res.status(500).json({error: error})
@@ -186,15 +195,17 @@ const getPostsForUser = asyncHandler(async (req, res) => {
     }
 
     try {
-        const { videoUrl, friendTags, shareWithGroups, shareWithPages, description } = req.body;
+        const { videoUrl, friendTags, shareWithGroups, shareWithPages, description, songid , location} = req.body;
         console.log(req.body);
         const userId = mongoose.Types.ObjectId(req.params.user_id);
 
         const storyFields = {
             videoUrl,
             postedBy: userId,
-            description, // Add description field
-            createdAt: new Date() // Add timestamp for post creation
+            description,
+            songid,
+            location,
+            createdAt: new Date()
         };
 
         if (friendTags) storyFields.friendTags = friendTags;
@@ -209,6 +220,10 @@ const getPostsForUser = asyncHandler(async (req, res) => {
         newStory.expiresAt = expirationTime;
 
         const savedStory = await newStory.save();
+        const userActivePlan = await getCloudUser(userId);
+    if (userActivePlan.activePlan!='free') {
+      await Cloudstatus(userActivePlan)
+    }
         return res.status(201).json(savedStory);
     } catch (error) {
         console.error("Error creating story:", error);

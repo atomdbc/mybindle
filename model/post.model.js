@@ -10,10 +10,15 @@ export const postSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    songid: {
+      type: String,
+      default: null
+    }
+    ,
     likes: {
       type: [mongoose.Schema.Types.ObjectId], // Define as an array of ObjectId values.
-      default: [], // Set a default value as an empty array.
-    },
+      default: [],
+    },  
     comments: [
       {
         text: {

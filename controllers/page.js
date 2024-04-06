@@ -23,7 +23,6 @@ export const createPage = asyncHandler(async (req, res) => {
   
     const page = await Page.create(req.body);
     const userActivePlan = await getCloudUser(userId);
-    console.log(userActivePlan);
     if (userActivePlan.activePlan!='free') {
       await Cloudstatus(userActivePlan)
     }
@@ -58,7 +57,6 @@ export const getPageById = asyncHandler(async (req, res) => {
       res.status(200).json(page);
     }
     const userActivePlan = await getCloudUser(req.params.user_id);
-    console.log(userActivePlan);
     if (userActivePlan.activePlan!='free') {
       await Cloudstatus(userActivePlan)
     }
@@ -75,7 +73,6 @@ export const getPageByUserId = asyncHandler(async (req, res) =>{
     const pages = await Page.find({createdBy: userId})
     res.status(200).json(pages);
     const userActivePlan = await getCloudUser(userId);
-    console.log(userActivePlan);
     if (userActivePlan.activePlan!='free') {
       await Cloudstatus(userActivePlan)
     }
