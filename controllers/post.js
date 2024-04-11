@@ -13,7 +13,7 @@ const makePost = asyncHandler(async (req, res) => {
   };
   try{
       const { desc, photo, location, friendTags, sharewithgroups, sharewithpages , songid  } = req.body;
-      const userId = mongoose.Types.ObjectId(req.params.userId);
+      const userId = req.params.user_id;
     
       const postFields = {
         desc,
@@ -32,9 +32,9 @@ const makePost = asyncHandler(async (req, res) => {
     
       const savedPost = await newPost.save();
       const userActivePlan = await getCloudUser(userId);
-    if (userActivePlan.activePlan!='free') {
-      await Cloudstatus(userActivePlan)
-    }
+      if (userActivePlan.activePlan!="free") {
+        await Cloudstatus(userActivePlan)
+      }
       return res.status(201).json(savedPost);
     } catch(error) {
       return res.status(500).json({error: error})

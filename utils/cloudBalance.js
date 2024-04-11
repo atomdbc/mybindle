@@ -18,13 +18,14 @@ const resellerEmail = process.env.RESELLER_EMAIL;
 
 export const getCloudUser = async (userId) => {
     try {
-        const user = await UserCloud.findOne({ owner: userId });
+        const user = await UserCloud.findOne({ owner: mongoose.Types.ObjectId(userId) });
         if (!user) {
             throw new Error('User not found');
         }
         return user;
     } catch (error) {
         console.error('Error fetching user:', error);
+        throw error; 
     }
 };
 
