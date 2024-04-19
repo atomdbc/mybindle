@@ -3,6 +3,7 @@ import express from 'express';
 import expressWs from 'express-ws';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
+import { time } from 'console';
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.ws('/:endpoint', (ws, req) => {
         const decryptedMessage = decryptMessage(message);
         if (decryptedMessage) {
             const timestamp = getCurrentTime();
+            console.log(timestamp);
             console.log(`${timestamp} ${username} sent: ${decryptedMessage.content}`);
             broadcastMessage({ sender: username, content: decryptedMessage.content, timestamp }, endpoint);
         }

@@ -61,12 +61,18 @@ export const encryptMessage = (message) => {
 export const getCurrentTime = () => {
     try {
         const now = new Date();
-        const hours = now.getHours().toString().padStart(2, '0');
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const seconds = now.getSeconds().toString().padStart(2, '0');
-        return `${hours}:${minutes}:${seconds}`;
+        const year = now.getUTCFullYear();
+        const month = (now.getUTCMonth() + 1).toString().padStart(2, '0'); 
+        const day = now.getUTCDate().toString().padStart(2, '0');
+        const hours = now.getUTCHours().toString().padStart(2, '0');
+        const minutes = now.getUTCMinutes().toString().padStart(2, '0');
+        const seconds = now.getUTCSeconds().toString().padStart(2, '0');
+        const milliseconds = now.getUTCMilliseconds().toString().padStart(3, '0');
+
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
     } catch (error) {
-        console.error('Error getting current time:', error);
+        console.error('Error getting current timestamp:', error);
         return '';
     }
 };
+
